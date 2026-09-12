@@ -53,7 +53,7 @@ pipeline {
             echo 'Pipeline succeeded!'
         }
         failure {
-            // Actions to perform if the pipeline fails
+            // Actions to perform if the pipeline fail
             echo 'Pipeline failed!'
         }
     }
