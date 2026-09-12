@@ -49,7 +49,7 @@ pipeline {
             cleanWs()
         }
         success {
-            // Actions to perform if the pipeline succeeds
+            // Actions to perform if the pipelines succeeds
             echo 'Pipeline succeeded!'
         }
         failure {
