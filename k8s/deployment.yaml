@@ -19,6 +19,3 @@ spec:
           image: 645393970720.dkr.ecr.ap-south-1.amazonaws.com/end-end-devops-project:latest
           ports:
             - containerPort: 8080
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: prod
