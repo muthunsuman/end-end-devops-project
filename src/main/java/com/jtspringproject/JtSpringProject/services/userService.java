@@ -7,16 +7,17 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.jtspringproject.JtSpringProject.dao.userDao;
+import com.jtspringproject.JtSpringProject.dao.UserDao;
+//import com.jtspringproject.JtSpringProject.dao.userDao;
 import com.jtspringproject.JtSpringProject.models.User;
 
 @Service
 public class userService {
-	private final userDao userDao;
+	private final UserDao userDao;
 	private final PasswordEncoder passwordEncoder;
 
 	@Autowired
-	public userService(userDao userDao, PasswordEncoder passwordEncoder) {
+	public userService(UserDao userDao, PasswordEncoder passwordEncoder) {
 		this.userDao = userDao;
 		this.passwordEncoder = passwordEncoder;
 	}
