@@ -2,11 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: end-end-devops-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-09edd4f5d32884040,subnet-02ff09c07bf41ae4f,subnet-0fa5a4b8076cd23a9
 spec:
   type: LoadBalancer
   selector:
     app: end-end-devops-project
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 8080
