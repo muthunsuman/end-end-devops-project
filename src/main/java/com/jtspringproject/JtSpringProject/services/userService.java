@@ -7,23 +7,23 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.jtspringproject.JtSpringProject.dao.UserDao;
+import com.jtspringproject.JtSpringProject.dao.userDao;
 //import com.jtspringproject.JtSpringProject.dao.userDao;
 import com.jtspringproject.JtSpringProject.models.User;
 
 @Service
 public class userService {
-	private final UserDao userDao;
+	private final userDao UserDao;
 	private final PasswordEncoder passwordEncoder;
 
 	@Autowired
-	public userService(UserDao userDao, PasswordEncoder passwordEncoder) {
-		this.userDao = userDao;
+	public userService(userDao UserDao, PasswordEncoder passwordEncoder) {
+		this.UserDao = UserDao;
 		this.passwordEncoder = passwordEncoder;
 	}
 
 	public List<User> getUsers() {
-		return this.userDao.getAllUser();
+		return this.UserDao.getAllUser();
 	}
 
 	public User addUser(User user) {
@@ -31,32 +31,32 @@ public class userService {
 			if (user.getPassword() != null && !isPasswordEncoded(user.getPassword())) {
 				user.setPassword(passwordEncoder.encode(user.getPassword()));
 			}
-			return this.userDao.saveUser(user);
+			return this.UserDao.saveUser(user);
 		} catch (DataIntegrityViolationException e) {
 			throw new IllegalStateException("Unable to create user due to data integrity constraints.", e);
 		}
 	}
 
 	public boolean checkUserExists(String username) {
-		return this.userDao.userExists(username);
+		return this.UserDao.userExists(username);
 	}
 
 	public User getUserByUsername(String username) {
-		User user = userDao.getUserByUsername(username);
+		User user = UserDao.getUserByUsername(username);
 		if (user != null && user.getPassword() != null && !isPasswordEncoded(user.getPassword())) {
 			// Migrate legacy plain-text passwords to BCrypt when the user is loaded.
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
-			userDao.saveUser(user);
+			UserDao.saveUser(user);
 		}
 		return user;
 	}
 
 	public User getUserById(int id) {
-		return this.userDao.getUserById(id);
+		return this.UserDao.getUserById(id);
 	}
 
 	public User updateUserProfile(int userId, String username, String email, String password, String address) {
-		User existingUser = this.userDao.getUserById(userId);
+		User existingUser = this.UserDao.getUserById(userId);
 		if (existingUser == null) {
 			return null;
 		}
@@ -69,7 +69,7 @@ public class userService {
 			existingUser.setPassword(isPasswordEncoded(password) ? password : passwordEncoder.encode(password));
 		}
 
-		return this.userDao.saveUser(existingUser);
+		return this.UserDao.saveUser(existingUser);
 	}
 
 	private boolean isPasswordEncoded(String password) {

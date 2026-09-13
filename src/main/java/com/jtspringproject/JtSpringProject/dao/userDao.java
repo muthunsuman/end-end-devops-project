@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jtspringproject.JtSpringProject.models.User;
 
 @Repository
-public class UserDao {
+public class userDao {
 
     @PersistenceContext
     private EntityManager entityManager;
