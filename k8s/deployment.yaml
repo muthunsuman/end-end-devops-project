@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: end-end-devops-project
+  labels:
+    app: end-end-devops-project
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: end-end-devops-project
+  template:
+    metadata:
+      labels:
+        app: end-end-devops-project
+    spec:
+      containers:
+        - name: end-end-devops-project
+          image: 645393970720.dkr.ecr.ap-south-1.amazonaws.com/end-end-devops-project:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
