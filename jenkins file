@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCOUNT_ID = "645393970720"
+        AWS_ACCOUNT_ID     = "645393970720"
         AWS_DEFAULT_REGION = "ap-south-1"
         IMAGE_REPO_NAME    = "end-end-devops-project"
         IMAGE_TAG          = "latest"
         REPOSITORY_URI     = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+        //KUBECONFIG         = credentials('kubeconfig-cred') // Jenkins credential holding kubeconfig
     }
 
     stages {
@@ -18,21 +19,18 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building project...'
                 sh 'mvn clean install -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
                 sh 'mvn test'
             }
         }
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker image...'
                 script {
                     dockerImage = docker.build("${IMAGE_REPO_NAME}:${IMAGE_TAG}")
                 }
@@ -40,23 +38,22 @@ pipeline {
         }
 
         stage('Login to ECR') {
-    steps {
-        withCredentials([
-            string(credentialsId: 'Access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'Secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-            sh """
-                aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                aws configure set default.region ${AWS_DEFAULT_REGION}
+            steps {
+                withCredentials([
+                    string(credentialsId: 'Access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'Secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    sh """
+                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+                        aws configure set default.region ${AWS_DEFAULT_REGION}
 
-                aws ecr get-login-password --region ${AWS_DEFAULT_REGION} \
-                | docker login --username AWS --password-stdin ${REPOSITORY_URI}
-            """
+                        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} \
+                        | docker login --username AWS --password-stdin ${REPOSITORY_URI}
+                    """
+                }
+            }
         }
-    }
-}
-
 
         stage('Push to ECR') {
             steps {
@@ -67,11 +64,30 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploying application...'
-                // Add ECS/Kubernetes deployment steps here
-            }
+     stage('Deploy to Kubernetes') {
+    steps {
+        withCredentials([file(credentialsId: 'kubeconfig-cred', variable: 'KUBECONFIG')]) {
+            sh """
+                # Apply manifests to create Deployment and Service if not present
+                kubectl apply -f k8s/deployment.yaml --kubeconfig $KUBECONFIG
+                kubectl apply -f k8s/service.yaml --kubeconfig $KUBECONFIG
+
+                # Update image to latest build
+                kubectl set image deployment/end-end-devops-project \
+                end-end-devops-project=${REPOSITORY_URI}:${IMAGE_TAG} --record --kubeconfig $KUBECONFIG
+
+                # Wait for rollout
+                kubectl rollout status deployment/end-end-devops-project --kubeconfig $KUBECONFIG
+            """
         }
+    }
+}
+stage('Verify Kubeconfig') {
+    steps {
+        withCredentials([file(credentialsId: 'kubeconfig-cred', variable: 'KUBECONFIG')]) {
+            sh "kubectl get nodes --kubeconfig $KUBECONFIG"
+        }
+    }
+}
     }
 }
